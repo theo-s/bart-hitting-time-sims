@@ -151,6 +151,7 @@ df_all %>%
   vthemes::theme_vmodern() +
   scale_x_continuous(labels = function(x){return(paste0(as.character(x*100), "%"))})+
   theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
         panel.grid.minor = element_blank())+
   labs(x = "Percent Correct Initial Splits",
        title = "DGP 1") -> p1
@@ -164,6 +165,7 @@ df_all %>%
   vthemes::theme_vmodern() +
   scale_x_continuous(labels = function(x){return(paste0(as.character(x*100), "%"))})+
   theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
         panel.grid.minor = element_blank())+
   labs(x = "Percent Correct Initial Splits",
        title = "DGP 2") -> p2
@@ -175,7 +177,9 @@ df_all %>%
   scale_fill_manual(values = c("100"="turquoise1", "10000"="royalblue2"), name = "Sample Size")+
   vthemes::theme_vmodern() +
   theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
         panel.grid.minor = element_blank())+
+  lims(x=c(0,175))+
   labs(x = "Changes to Initial Split") -> p3
 
 df_all %>% 
@@ -186,7 +190,9 @@ df_all %>%
   scale_fill_manual(values = c("100"="turquoise1", "10000"="royalblue2"), name = "Sample Size")+
   vthemes::theme_vmodern() +
   theme(panel.grid.major = element_blank(), 
+        panel.background = element_blank(),
         panel.grid.minor = element_blank())+
+  lims(x=c(0,175))+
   labs(x = "Changes to Initial Split") -> p4
   
 p_final = grid.arrange(p1+theme(legend.position ="none"), 
