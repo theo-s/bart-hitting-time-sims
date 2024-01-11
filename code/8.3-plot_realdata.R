@@ -57,17 +57,17 @@ for (dgp in c("dia","house", "sat", "echo", "tumor", "aba")) {
     dgp = "lss"
   }
   if (dgp == "dia") {
-    dgp = "Diabetes (n = 442)"
+    dgp = "Diabetes"
   } else if (dgp == "aba") {
-    dgp = "Abalone (n = 4177)"
+    dgp = "Abalone"
   } else if (dgp == "house") {
-    dgp = "CA Housing (n = 20640)"
+    dgp = "CA Housing"
   } else if (dgp == "tumor") {
-    dgp = "Breast Tumor (n = 116640)"
+    dgp = "Breast Tumor"
   } else if (dgp == "echo") {
-    dgp = "Echo Months (n = 17496)"
+    dgp = "Echo Months"
   } else if (dgp == "sat") {
-    dgp = "Satellite (n = 6435)"
+    dgp = "Satellite"
   }
   
   results[-1,] %>%
@@ -110,7 +110,7 @@ for (dgp in c("dia","house", "sat", "echo", "tumor", "aba")) {
     scale_y_continuous(limits = c(.94,1.01), labels = function(x){return(paste0(as.character(x*100), "%"))})-> plot_i
   all_plots[[iteration]] = plot_i
   
-  ggsave(plot_i,filename = paste0("results/figures/coverage/",dgp,"rmse.pdf"), height = 2.5, width = 3)
+  #ggsave(plot_i,filename = paste0("results/figures/coverage/",dgp,"rmse.pdf"), height = 2.5, width = 3)
   
   iteration <- iteration+1
 }
@@ -125,4 +125,4 @@ p_final = grid.arrange(all_plots[[1]]+theme(legend.position ="none"),
                        all_plots[[6]]+theme(axis.title.y=element_blank()), 
                        widths =c(4,4,5.5),
                        ncol = 3)
-ggsave(p_final,filename = paste0("results/figures/coverage/real_rmse.pdf"), height = 5, width = 8)
+ggsave(p_final,filename = paste0("results/figures/exp3/real_rmse.pdf"), height = 5, width = 8)
