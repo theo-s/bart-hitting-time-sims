@@ -13,7 +13,7 @@ for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
   
   
   if (use_saved_data) {
-    results <- read.csv(paste0("~/Desktop/bart-hitting-time-sims/results/cached_results/exp3_coverage_large",dgp,"_rmse.csv"))
+    results <- read.csv(paste0("~/Desktop/bart-hitting-time-sims/results/cached_results/exp3_coverage_medium",dgp,"_rmse.csv"))
   } else {
     
     results <- data.frame(n = NA,
@@ -87,7 +87,7 @@ for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
       }
     }
     
-    write.csv(results, paste0("~/Desktop/bart-hitting-time-sims/results/cached_results/exp3_coverage_large",dgp,"_rmse.csv"), row.names = FALSE)
+    write.csv(results, paste0("~/Desktop/bart-hitting-time-sims/results/cached_results/exp3_coverage_medium",dgp,"_rmse.csv"), row.names = FALSE)
   }
   
   if(dgp=="lss_") {
@@ -111,6 +111,7 @@ for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
   
   results[-1,] %>%
     filter(n>100) %>%
+    filter(nchain < 20) %>% 
     group_by(n, exp,run) %>%
     mutate(rmse_one = rmse[nchain==1]) %>% 
     ungroup() %>% 
@@ -127,10 +128,10 @@ for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
     ggplot(aes(x = n, y= mean_rmse, color = nchain))+
     geom_line(aes(linetype = nchain))+
     geom_point(aes(color = nchain))+
-    scale_linetype_manual(values = c("1" = "dashed", "2" = "solid", "5" = "solid" ,"10" = "solid", "20" = "solid"), name = "Chains")+
+    scale_linetype_manual(values = c("1" = "dashed", "2" = "solid", "5" = "solid" ,"10" = "solid"), name = "Chains")+
     geom_errorbar(aes(ymin = mean_rmse - 1.96*sd_rmse, ymax = mean_rmse + 1.96*sd_rmse, color = nchain), width = 0) +
     labs(y = "Relative RMSE", title = paste0("",dgp_map[[dgp]]))+
-    scale_color_manual(values = c("1"="turquoise1", "2" = "steelblue1" , "5" = "steelblue3", "10"="royalblue1", "20"="royalblue2"),name = "Chains")+
+    scale_color_manual(values = c("1"="turquoise1", "2" = "steelblue1" , "5" = "steelblue3", "10"="royalblue1"),name = "Chains")+
     vthemes::theme_vmodern() +
     theme(axis.line = element_line(color='black'),
           panel.background = element_rect(fill = 'white', color = 'white'),
@@ -144,7 +145,7 @@ for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
     scale_y_continuous(limits = c(.6,1.01), labels = function(x){return(paste0(as.character(x*100), "%"))})-> plot_i
   all_plots[[iteration]] = plot_i
   
-  ggsave(plot_i,filename = paste0("~/Desktop/bart-hitting-time-sims/results/figures/exp3_large/",dgp,"rmse_large.pdf"), height = 2.5, width = 3)
+  ggsave(plot_i,filename = paste0("~/Desktop/bart-hitting-time-sims/results/figures/exp3_medium/",dgp,"rmse_medium.pdf"), height = 2.5, width = 3)
   
   iteration <- iteration+1
 }
@@ -159,4 +160,4 @@ p_final = grid.arrange(all_plots[[1]]+theme(legend.position ="none"),
                        all_plots[[6]]+theme(axis.title.y=element_blank()), 
                        widths =c(4,4,5.5),
                        ncol = 3)
-ggsave(p_final,filename = paste0("~/Desktop/bart-hitting-time-sims/results/figures/exp3_large/all_rmse_large.pdf"), height = 5, width = 8)
+ggsave(p_final,filename = paste0("~/Desktop/bart-hitting-time-sims/results/figures/exp3_medium/all_rmse_medium.pdf"), height = 5, width = 8)

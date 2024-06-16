@@ -1,7 +1,9 @@
 # If needed, install vthemes from Yu-Group website
 # devtools::install_github("Yu-Group/vthemes")
+
 library(ggplot2)
 library(dplyr)
+library(ggeasy)
 library(vthemes)
 
 use_saved_data = TRUE
@@ -9,11 +11,11 @@ use_saved_data = TRUE
 all_plots = list()
 
 iteration = 1
-for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
+for (dgp in c("sum","high", "low", "piecewise", "tree", "lss")) {
   
   
   if (use_saved_data) {
-    results <- read.csv(paste0("~/Desktop/bart-hitting-time-sims/results/cached_results/exp3_coverage_large",dgp,"_rmse.csv"))
+    results <- read.csv(paste0("~/Desktop/bart-hitting-time-sims/results/cached_results/exp3_coverage_medium",dgp,"_rmse.csv"))
   } else {
     
     results <- data.frame(n = NA,
@@ -53,9 +55,7 @@ for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
         }
       }
     }
-    
     #results = results %>% filter(nchain > 1)
-    
     for (file in dir("results/coverage/")) {
       if (grepl(pattern = dgp, x = file)) {
         #print(file)
@@ -87,20 +87,19 @@ for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
       }
     }
     
-    write.csv(results, paste0("~/Desktop/bart-hitting-time-sims/results/cached_results/exp3_coverage_large",dgp,"_rmse.csv"), row.names = FALSE)
+    write.csv(results, paste0("~/Desktop/bart-hitting-time-sims/results/cached_results/exp3_coverage_medium",dgp,"_rmse.csv"), row.names = FALSE)
   }
   
   if(dgp=="lss_") {
     dgp = "lss"
   }
   
-  
-  
   results[-1,] %>%
     group_by(n, nchain, exp) %>%
-    summarise(reps_completed = max(run)) -> num_runs
+    summarise(reps_completed = length(unique(run)),
+              max_rep = max(run)) -> num_runs
   print(dgp)
-  print(num_runs,n=100)
+  print(num_runs, n=100)
   
   dgp_map =list("sum" = "Sum",
                 "high" = "High",
@@ -111,40 +110,36 @@ for (dgp in c("sum","high", "low", "piecewise", "tree", "lss_")) {
   
   results[-1,] %>%
     filter(n>100) %>%
-    group_by(n, exp,run) %>%
-    mutate(rmse_one = rmse[nchain==1]) %>% 
-    ungroup() %>% 
-    mutate(rmse = rmse / rmse_one) %>%
+    filter(nchain < 20) %>% 
     group_by(n, nchain, exp) %>%
     summarise(mean_rmse = mean(rmse),
               mean_coverage = mean(cov),
-              sd_coverage = sd(cov)/10,
-              mean_rmse = mean(rmse),
-              sd_rmse = sd(rmse)/10) %>%
-    group_by(n) %>%
-    dplyr::select(n, nchain, mean_rmse,sd_rmse) %>%
+              sd_coverage = sd(cov)/10) %>%
+    dplyr::select(n, nchain, mean_coverage,sd_coverage) %>%
     mutate(nchain = as.factor(nchain)) %>%
-    ggplot(aes(x = n, y= mean_rmse, color = nchain))+
-    geom_line(aes(linetype = nchain))+
-    geom_point(aes(color = nchain))+
-    scale_linetype_manual(values = c("1" = "dashed", "2" = "solid", "5" = "solid" ,"10" = "solid", "20" = "solid"), name = "Chains")+
-    geom_errorbar(aes(ymin = mean_rmse - 1.96*sd_rmse, ymax = mean_rmse + 1.96*sd_rmse, color = nchain), width = 0) +
-    labs(y = "Relative RMSE", title = paste0("",dgp_map[[dgp]]))+
-    scale_color_manual(values = c("1"="turquoise1", "2" = "steelblue1" , "5" = "steelblue3", "10"="royalblue1", "20"="royalblue2"),name = "Chains")+
+    ggplot(aes(x = n, y = mean_coverage))+
+    ggplot2::geom_point(aes(color = nchain)) +
+    ggplot2::geom_line(aes(color = nchain)) +
     vthemes::theme_vmodern() +
+    #vthemes::scale_color_vmodern(discrete = FALSE)+
+    labs(y = "Empirical Coverage", title = paste0("",dgp_map[[dgp]]))+
+    geom_errorbar(aes(ymin = mean_coverage - 1.96*sd_coverage, ymax = mean_coverage + 1.96*sd_coverage, color = nchain), width = 0)+
+    scale_color_manual(values = c("1"="turquoise1", "2" = "steelblue1" , "5" = "steelblue3", "10"="royalblue1"),name = "Chains")+
     theme(axis.line = element_line(color='black'),
           panel.background = element_rect(fill = 'white', color = 'white'),
           panel.grid.major = element_blank(),
-          text = element_text(family = "Times"),
           panel.grid.minor = element_blank(),
+          text = element_text(family = "Times"),
           panel.border = element_blank(),
           axis.title=element_text(size=12),
           axis.text=element_text(size=10))+
     scale_x_continuous(labels = function(x){return(paste0(as.character(x/1e3), "K"))})+
-    scale_y_continuous(limits = c(.6,1.01), labels = function(x){return(paste0(as.character(x*100), "%"))})-> plot_i
-  all_plots[[iteration]] = plot_i
+    scale_y_continuous(labels = function(x){return(paste0(as.character(x*100), "%"))})+
+    geom_hline(yintercept = .95,linetype="dashed",
+               color = "red") -> plot_i
   
-  ggsave(plot_i,filename = paste0("~/Desktop/bart-hitting-time-sims/results/figures/exp3_large/",dgp,"rmse_large.pdf"), height = 2.5, width = 3)
+  all_plots[[iteration]] = plot_i
+  ggsave(plot_i,filename = paste0("~/Desktop/bart-hitting-time-sims/results/figures/exp3_medium/",dgp,"coverage_medium.pdf"), height = 2.5, width = 3)
   
   iteration <- iteration+1
 }
@@ -159,4 +154,4 @@ p_final = grid.arrange(all_plots[[1]]+theme(legend.position ="none"),
                        all_plots[[6]]+theme(axis.title.y=element_blank()), 
                        widths =c(4,4,5.5),
                        ncol = 3)
-ggsave(p_final,filename = paste0("~/Desktop/bart-hitting-time-sims/results/figures/exp3_large/all_rmse_large.pdf"), height = 5, width = 8)
+ggsave(p_final,filename = paste0("~/Desktop/bart-hitting-time-sims/results/figures/exp3_medium/all_coverages_medium.pdf"), height = 5, width = 8)
